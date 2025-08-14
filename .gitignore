@@ -1,0 +1,32 @@
+# Environnement virtuel Python
+.venv/
+
+# Ignorer le fichier .env
+.env
+
+# Ignorer le répertoire de données locales
+data/raw/** 
+data/process/** 
+data/final/** 
+data/generate/** 
+
+# Ignore fichier inutile
+*test.py
+
+# Ignorer les models
+model/save_model/** 
+
+# Ignorer les fichiers de data
+data/dataframe/generate/data/**
+
+
+data/code/generate/data/**
+
+**/dataframes/*
+
+*.csv
+
+*test2.py
+
+wiki_fr
+wiki_paire
