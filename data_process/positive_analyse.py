@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
     # Seuils / affichages
     p.add_argument("--threshold", type=float, default=0.6, help="Seuil pour filtrer les paires faibles")
     p.add_argument("--show_below", type=int, default=30, help="Nb d'exemples à afficher sous le seuil")
-    p.add_argument("--range_low", type=float, default=0.5, help="Borne inférieure de l'intervalle à lister")
+    p.add_argument("--range_low", type=float, default=0.6, help="Borne inférieure de l'intervalle à lister")
     p.add_argument("--range_high", type=float, default=0.7, help="Borne supérieure de l'intervalle à lister")
     p.add_argument("--show_between", type=int, default=30, help="Nb d'exemples à afficher dans l'intervalle")
     p.add_argument("--show_examples", type=int, default=3, help="Nb d'exemples extrêmes à afficher")
