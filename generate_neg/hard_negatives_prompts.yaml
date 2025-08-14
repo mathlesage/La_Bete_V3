@@ -1,0 +1,156 @@
+# Prompts pour hard negatives RECALIBRÉS (cible stricte: 0.3-0.6)
+prompts:
+  query_based:
+    - name: "semantic_drift"
+      prompt: |
+        Remplace les mots techniques par des équivalents dans un domaine proche.
+        
+        Phrase: {query}
+        
+        EXEMPLES:
+        - "Comment installer Python ?" → "Comment installer Ruby ?"
+        - "Qu'est-ce que React ?" → "Qu'est-ce que Vue.js ?"
+        - "Comment déboguer du code ?" → "Comment tester du code ?"
+        
+        Garde la même structure, change juste le sujet principal:
+
+    - name: "structure_copy"
+      prompt: |
+        Copie EXACTEMENT la structure grammaticale mais change UNIQUEMENT le domaine.
+        
+        Phrase: {query}
+        
+        RÈGLE: Garde chaque mot de structure (comment, qu'est-ce, le, la, de, etc.)
+        
+        EXEMPLES:
+        - "Comment installer Python sur Windows ?" → "Comment planter des roses en terre ?"
+        - "Qu'est-ce que le machine learning ?" → "Qu'est-ce que la photosynthèse ?"
+        - "Pourquoi Docker est-il utile ?" → "Pourquoi l'exercice est-il important ?"
+        
+        Même structure EXACTE, domaine différent:
+
+    - name: "opposite_intent"
+      prompt: |
+        Inverse ou nie l'action principale.
+        
+        Phrase: {query}
+        
+        EXEMPLES:
+        - "Comment installer Python ?" → "Comment éviter d'installer Python ?"
+        - "Comment créer une API ?" → "Comment supprimer une API ?"
+        - "Qu'est-ce que Docker ?" → "Qu'est-ce qui remplace Docker ?"
+        - "Pourquoi utiliser Git ?" → "Pourquoi ne pas utiliser Git ?"
+        
+        Action opposée ou négation:
+
+    - name: "domain_shift"
+      prompt: |
+        Garde les mots de liaison et la structure, change le domaine technique.
+        
+        Phrase: {query}
+        
+        EXEMPLES:
+        - "Comment configurer Git pour un projet ?" → "Comment préparer le sol pour un jardin ?"
+        - "Qu'est-ce qu'une API REST ?" → "Qu'est-ce qu'une recette française ?"
+        - "Pourquoi utiliser Docker ?" → "Pourquoi faire du sport ?"
+        
+        Structure similaire, domaine différent mais connexe:
+
+    - name: "partial_overlap"
+      prompt: |
+        Utilise le mot-clé principal dans une question complètement différente.
+        
+        Phrase: {query}
+        
+        EXEMPLES:
+        - "Comment installer Python ?" → "Python est-il gratuit ?"
+        - "Qu'est-ce que React ?" → "React ou Angular pour débuter ?"
+        - "Comment utiliser Docker ?" → "Docker Desktop vs Docker Engine ?"
+        - "Pourquoi Git est important ?" → "Git vs SVN en entreprise ?"
+        
+        Même mot-clé, question totalement différente:
+
+    - name: "syntactic_similarity"
+      prompt: |
+        Garde le type de question et les mots grammaticaux, change le contenu.
+        
+        Phrase: {query}
+        
+        EXEMPLES:
+        - "Comment installer Python sur Mac ?" → "Comment cuisiner du riz au four ?"
+        - "Qu'est-ce que Docker pour les débutants ?" → "Qu'est-ce que le yoga pour les seniors ?"
+        - "Pourquoi le code ne marche pas ?" → "Pourquoi la plante ne pousse pas ?"
+        
+        Même type de phrase, contenu différent:
+
+  positive_based:
+    - name: "near_miss"
+      prompt: |
+        Change 2-3 mots techniques en gardant la structure exacte.
+        
+        Réponse: {positive}
+        Query: {query}
+        
+        EXEMPLES:
+        - "Téléchargez Python depuis python.org" → "Téléchargez Java depuis java.com"
+        - "React est une bibliothèque JavaScript" → "Vue est une bibliothèque JavaScript"
+        - "Utilisez console.log pour déboguer" → "Utilisez print pour déboguer"
+        
+        Modification minimale mais significative:
+
+    - name: "over_generalization"
+      prompt: |
+        Ajoute "tous", "toujours", "chaque" en gardant le domaine.
+        
+        Réponse: {positive}
+        Query: {query}
+        
+        EXEMPLES:
+        - "Python s'installe depuis python.org" → "Tous les langages s'installent depuis leur site"
+        - "React utilise JSX" → "Toutes les bibliothèques JavaScript utilisent JSX"
+        - "Git track les changements" → "Chaque système de version track les changements"
+        
+        Généralisation dans le même domaine:
+
+    - name: "context_swap"
+      prompt: |
+        Remplace l'objet par un équivalent du même domaine.
+        
+        Réponse: {positive}
+        Query: {query}
+        
+        EXEMPLES:
+        - "Installez Python avec pip" → "Installez Node avec npm"
+        - "Docker utilise des conteneurs" → "Kubernetes utilise des pods"
+        - "React crée des composants" → "Angular crée des directives"
+        
+        Même action, objet similaire:
+
+    - name: "temporal_shift"
+      prompt: |
+        Ajoute une référence temporelle ou de version.
+        
+        Réponse: {positive}
+        Query: {query}
+        
+        EXEMPLES:
+        - "Python s'installe facilement" → "Python 2 s'installait différemment"
+        - "React est populaire" → "React était nouveau en 2013"
+        - "Docker simplifie le déploiement" → "Docker a remplacé les machines virtuelles"
+        
+        Ajoute un aspect temporel:
+
+    - name: "causal_reversal"
+      prompt: |
+        Échange le sujet et l'objet ou inverse qui fait quoi.
+        
+        Réponse: {positive}
+        Query: {query}
+        
+        EXEMPLES:
+        - "Python installe les packages" → "Les packages installent Python"
+        - "React affiche les composants" → "Les composants contrôlent React"
+        - "Docker lance les conteneurs" → "Les conteneurs démarrent Docker"
+        - "L'utilisateur configure Git" → "Git configure l'utilisateur"
+        
+        Sujet devient objet ou agent devient patient:

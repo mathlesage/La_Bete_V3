@@ -1,0 +1,57 @@
+{
+  "summary": {
+    "tested": 6,
+    "ok": 6,
+    "ko": 0
+  },
+  "results": [
+    {
+      "index": 1,
+      "model": "openai/gpt-4.1-nano",
+      "provider": "openai",
+      "success": true,
+      "output_preview": "OK",
+      "error": null
+    },
+    {
+      "index": 2,
+      "model": "google/gemini-2.5-flash-lite",
+      "provider": "google-vertex",
+      "success": true,
+      "output_preview": "OK",
+      "error": null
+    },
+    {
+      "index": 3,
+      "model": "meta-llama/llama-4-maverick",
+      "provider": "lambda",
+      "success": true,
+      "output_preview": "OK",
+      "error": null
+    },
+    {
+      "index": 4,
+      "model": "qwen/qwen3-235b-a22b-2507",
+      "provider": "baseten",
+      "success": true,
+      "output_preview": "OK",
+      "error": null
+    },
+    {
+      "index": 5,
+      "model": "mistralai/mistral-small-3.2-24b-instruct",
+      "provider": "deepinfra",
+      "success": true,
+      "output_preview": "OK",
+      "error": null
+    },
+    {
+      "index": 6,
+      "model": "x-ai/grok-3-mini",
+      "provider": "xAI",
+      "success": true,
+      "output_preview": "",
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+# ===================================================================
+# Styles spécifiques pour la génération des positifs
+# ===================================================================
+styles_pour_positifs:
+  - key: "urgent"
+    instruction: "Adopte un ton direct et urgent, en mettant l'accent sur l'importance immédiate de l'information."
+  - key: "intrigant"
+    instruction: "Formule-le de manière intrigante et mystérieuse, pour susciter la curiosité."
+  - key: "simplifie"
+    instruction: "Utilise un langage extrêmement simple et clair, comme si tu expliquais le concept à un débutant complet."
+  - key: "professionnel"
+    instruction: "Rédige avec un ton formel et professionnel, comme dans un rapport d'entreprise."
+  - key: "decontracte"
+    instruction: "Adopte un ton décontracté et informel, comme dans une conversation entre collègues."
+  - key: "analytique"
+    instruction: "Présente l'information sous un angle analytique, en mettant en avant la structure."
+  - key: "interrogatif"
+    instruction: "Transforme l'idée principale en une question percutante qui pousse à la réflexion."
+  - key: "question_directe"
+    instruction: "Transforme l'idée principale en une question simple, du type 'Comment faire...?'."
+  - key: "bullet_points"
+    instruction: "Présente les points clés sous la forme d'une liste à puces (bullet points)."
+  - key: "brouillon"
+    instruction: "Rédige-le sous une forme de brouillon, avec des notes incomplètes ou des idées jetées rapidement."
+  - key: "standard"
+    instruction: "Rédige dans un style standard, neutre et informatif, sans aucun effet de style particulier."
+  - key: "creatif"
+    instruction: "Utilise un langage plus créatif et imagé pour présenter l'information de manière originale."
+  - key: "factuel"
+    instruction: "Concentre-toi uniquement sur les faits. Présente l'information de la manière la plus directe et factuelle possible, sans opinion ni fioriture."
+  - key: "didactique"
+    instruction: "Adopte un ton didactique, en expliquant clairement le concept étape par étape, comme un professeur le ferait."
+
+# ===================================================================
+# Stratégies de génération pour les textes "positifs"
+# ===================================================================
+strategies:
+  generate_title:
+    key: "generate_title"
+    word_count_range: [4, 8]
+    prompt: |
+      Analyse le texte suivant :
+      ---
+      {anchor_text}
+      ---
+      En te basant uniquement sur son contenu, génère un titre concis d'environ {word_count} mots qui capture son idée centrale. Ne retourne que le titre.
+    requires_style: false
+
+  paraphrase_changement_vocabulaire:
+    key: "paraphrase_changement_vocabulaire"
+    prompt: |
+      Réécris le texte suivant en conservant tout le sens et le niveau de détail de l'original, mais avec un vocabulaire et une syntaxe totalement différents.
+      Instruction de Style pour la réécriture : {style_instruction}
+      Texte original : --- {anchor_text} ---
+    requires_style: true
+
+  paraphrase_longue_fidele:
+    key: "paraphrase_longue_fidele"
+    prompt: |
+      Effectue une paraphrase approfondie du long texte suivant pour produire un nouveau texte, conservant toutes les idées mais avec une formulation entièrement originale, sans mots en commun, une structure et un ordre des idées différents.
+      Instruction de Style pour la réécriture : {style_instruction}
+      Texte original : --- {anchor_text} ---
+    requires_style: true
+
+  paraphrase_similaire:
+    key: "paraphrase_similaire"
+    prompt: |
+      Réécris le court texte suivant avec des mots et une structure différents, en gardant le même sens et une longueur similaire.
+      Instruction de Style pour la réécriture : {style_instruction}
+      Texte original : --- {anchor_text} ---
+    requires_style: true
+
+  resume_court_avec_style:
+    key: "resume_court_avec_style"
+    word_count_range: [10, 20]
+    prompt: |
+      Synthétise le texte suivant en un résumé d'environ {word_count} mots, en utilisant le plus possible de nouveaux mots.
+      Instruction de Style Impérative pour le résumé : {style_instruction}
+      Texte à résumer : --- {anchor_text} ---
+    requires_style: true
+
+  resume_moyen_avec_style:
+    key: "resume_moyen_avec_style"
+    word_count_range: [20, 30]
+    prompt: |
+      Rédige un résumé d'environ {word_count} mots du texte suivant, en utilisant le moins de mots possible du texte original.
+      Instruction de Style Impérative pour le résumé : {style_instruction}
+      Texte à résumer : --- {anchor_text} ---
+    requires_style: true
+
+  elaboration_longue_depuis_medium:
+    key: "elaboration_longue_depuis_medium"
+    word_count_range: [50, 100]
+    prompt: |
+      En te basant sur le texte suivant, rédige un texte plus détaillé pour atteindre une longueur d'environ {word_count} mots. Change totalement la structure, le vocabulaire et le style et utilise le plus possible de mots nouveaux.
+      Instruction de Style pour le nouveau texte : {style_instruction}
+      Texte de base : --- {anchor_text} ---
+    requires_style: true
+
+  elaboration_medium_depuis_court:
+    key: "elaboration_medium_depuis_court"
+    word_count_range: [100, 300]
+    prompt: |
+      Développe l'idée concise du texte suivant en un texte détaillé d'environ {word_count} mots. Change totalement la structure, le vocabulaire et utilise le plus possible de mots nouveaux.
+      Instruction de Style pour le nouveau texte : {style_instruction}
+      Texte de base : --- {anchor_text} ---
+    requires_style: true
+
+# ===================================================================
+# Configuration des "Recettes" par Catégorie
+# ===================================================================
+recettes_par_categorie:
+  long:
+    - strategie: generate_title
+      poids: 20
+    - strategie: resume_court_avec_style
+      poids: 60
+    - strategie: resume_moyen_avec_style
+      poids: 10
+    - strategie: paraphrase_longue_fidele
+      poids: 10
+
+  medium:
+    - strategie: generate_title
+      poids: 20
+    - strategie: resume_court_avec_style
+      poids: 40
+    - strategie: resume_moyen_avec_style
+      poids: 10
+    - strategie: paraphrase_changement_vocabulaire
+      poids: 20
+    - strategie: elaboration_longue_depuis_medium
+      poids: 10
+      
+  short:
+    - strategie: generate_title
+      poids: 30
+    - strategie: paraphrase_similaire
+      poids: 50
+    - strategie: elaboration_medium_depuis_court
+      poids: 20
+
+
+llm:
+  # Configuration des LLMs pour la génération de textes positifs
+  rotation:
+    - model: "openai/gpt-4.1-nano"
+      provider: openai
+    - model: "google/gemini-2.5-flash-lite"
+      provider: "google-vertex"
+    - model: "meta-llama/llama-4-maverick"
+      provider: "lambda"
+    - model: "qwen/qwen3-235b-a22b-2507"
+      provider: "baseten"
+
+    - model: "x-ai/grok-3-mini"
+      provider: "xAI"
+  
