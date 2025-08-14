@@ -136,7 +136,8 @@ def main():
 
     print("\n=== Chargement du modèle d'embeddings ===")
     print(f"Modèle: {args.model}")
-    model = SentenceTransformer(args.model)
+    print("trust_remote_code: True")
+    model = SentenceTransformer(args.model, trust_remote_code=True)
 
     anchors = df[args.anchor_col].astype(str).tolist()
     gens = df[args.generated_col].astype(str).tolist()
