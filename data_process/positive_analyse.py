@@ -55,6 +55,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--anchor_col", type=str, default="anchor_text", help="Nom de la colonne anchor")
     p.add_argument("--generated_col", type=str, default="generated_text", help="Nom de la colonne generated")
 
+    # Colonne modèle & seuils d'analyse
+    p.add_argument("--model_col", type=str, default="model", help="Nom de la colonne modèle (si disponible)")
+    p.add_argument("--threshold", type=float, default=0.6, help="Seuil pour filtrer les paires faibles")
+    p.add_argument("--show_below", type=int, default=30, help="Nb d'exemples à afficher sous le seuil")
+
     # Modèle et perf
     p.add_argument("--model", type=str, default="intfloat/multilingual-e5-base", help="Nom du modèle d'embeddings")
     p.add_argument("--batch_size", type=int, default=64, help="Taille de batch pour l'encodage")
@@ -127,7 +132,8 @@ def main():
     print("\n=== Chargement des données ===")
     df = load_data(args)
     check_columns(df, args.anchor_col, args.generated_col)
-    df = df[[args.anchor_col, args.generated_col]].dropna()
+    keep_cols = [args.anchor_col, args.generated_col] + ([args.model_col] if args.model_col in df.columns else [])
+    df = df[keep_cols].dropna(subset=[args.anchor_col, args.generated_col])
     df = maybe_sample(df, args.max_rows, args.sample_frac, args.seed)
     n = len(df)
     if n == 0:
@@ -136,11 +142,15 @@ def main():
 
     print("\n=== Chargement du modèle d'embeddings ===")
     print(f"Modèle: {args.model}")
+    print(f"Colonne modèle: {args.model_col if args.model_col in df.columns else 'N/A'}")
     print("trust_remote_code: True")
+    print(f"Seuil sous-similarité: {args.threshold} | Exemples à afficher: {args.show_below}")
     model = SentenceTransformer(args.model, trust_remote_code=True)
 
     anchors = df[args.anchor_col].astype(str).tolist()
     gens = df[args.generated_col].astype(str).tolist()
+
+    models = df[args.model_col].astype(str).tolist() if args.model_col in df.columns else None
 
     print("\n=== Encodage des textes ===")
     A = compute_embeddings(model, anchors, args.batch_size)
@@ -183,6 +193,43 @@ def main():
     for k in [f">={t}" for t in thresholds]:
         print(f"  {k:>6}: {shares[k]*100:.2f}%")
 
+    # Analyse sous le seuil demandé
+    print(f"=== Paires sous le seuil {args.threshold:.2f} ===")
+    below_mask = sims < args.threshold
+    nb_below = int(np.sum(below_mask))
+    pct_below = nb_below / n
+    print(f"Total sous seuil: {nb_below} / {n} ({pct_below*100:.2f}%)")
+    idx_below = np.where(below_mask)[0]
+    if len(idx_below) > 0:
+        idx_sorted = idx_below[np.argsort(sims[idx_below])]
+        show_idx = idx_sorted[:min(args.show_below, len(idx_sorted))]
+        print(f"=== Exemples sous {args.threshold:.2f} ({len(show_idx)}) ===")
+        for i, idx in enumerate(show_idx, 1):
+            print(f"[{i}] sim={sims[idx]:.4f}")
+            print(f"  anchor   : {anchors[idx][:400]}")
+            print(f"  generated: {gens[idx][:400]}")
+    else:
+        print("Aucune paire sous le seuil.")
+
+    # Pourcentage par modèle
+    if models is not None:
+        arr_models = np.array(models)
+        unique = np.unique(arr_models)
+        rows = []
+        for m in sorted(unique):
+            sel = arr_models == m
+            n_m = int(np.sum(sel))
+            below_m = int(np.sum(below_mask[sel]))
+            pct_m = (below_m / n_m * 100) if n_m > 0 else float('nan')
+            mean_m = float(np.mean(sims[sel])) if n_m > 0 else float('nan')
+            rows.append((m, n_m, mean_m, below_m, pct_m))
+        mdl_df = pd.DataFrame(rows, columns=["model", "n", "mean_sim", "count_below", "pct_below_%"]).sort_values(by="pct_below_%", ascending=False)
+        print("=== Pourcentage sous le seuil par modèle ===")
+        for _, r in mdl_df.iterrows():
+            print(f"  {r['model']}: n={int(r['n'])}, mean_sim={r['mean_sim']:.3f}, sous_seuil={int(r['count_below'])} ({r['pct_below_%']:.2f}%)")
+    else:
+        print("(Aucune colonne modèle trouvée — passe --model_col si disponible.)")
+
     # Exemples extrêmes
     topk = min(args.show_examples, n)
     ord_idx = np.argsort(sims)
@@ -201,11 +248,14 @@ def main():
 
     if args.output_csv:
         out_path = os.path.abspath(args.output_csv)
-        out_df = pd.DataFrame({
+        cols = {
             "anchor_text": anchors,
             "generated_text": gens,
             "cosine_similarity": sims,
-        })
+        }
+        if models is not None:
+            cols["model"] = models
+        out_df = pd.DataFrame(cols)
         out_df.to_csv(out_path, index=False)
         print(f"\nScores sauvegardés: {out_path}")
 
