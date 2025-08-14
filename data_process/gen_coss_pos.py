@@ -51,7 +51,7 @@ def _build_embedder(embedding_model: Union[str, Any, Callable], device: Optional
     if isinstance(embedding_model, str):
         if SentenceTransformer is None:
             raise RuntimeError("Installe sentence-transformers pour utiliser un modèle par nom")
-        st = SentenceTransformer(embedding_model, device=device)
+        st = SentenceTransformer(embedding_model, device=device, trust_remote_code=True)
         def embed(texts):
             return st.encode(
                 texts,
