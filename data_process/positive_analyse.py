@@ -3,6 +3,13 @@
 Calcule des statistiques de similarité cosinus entre `anchor_text` et `generated_text`
 sur un dataset Hugging Face (ou un fichier local) avec un modèle d'embeddings.
 
+Fonctions principales
+- Stats globales des similarités
+- 30 exemples sous un seuil (par défaut 0.6) + compte et %
+- Exemples dans un intervalle [0.5, 0.7] + compte et %
+- % sous le seuil par modèle (si colonne `model` présente)
+- Export CSV optionnel avec colonnes booléennes `below_threshold` et `in_between_range`
+
 Exemples
 --------
 python similarite_anchor_generated_stats.py \
@@ -22,7 +29,6 @@ Notes
 """
 
 import argparse
-import math
 import os
 from datetime import datetime
 from typing import Optional, List
@@ -54,11 +60,15 @@ def parse_args() -> argparse.Namespace:
     # Colonnes
     p.add_argument("--anchor_col", type=str, default="anchor_text", help="Nom de la colonne anchor")
     p.add_argument("--generated_col", type=str, default="generated_text", help="Nom de la colonne generated")
-
-    # Colonne modèle & seuils d'analyse
     p.add_argument("--model_col", type=str, default="model", help="Nom de la colonne modèle (si disponible)")
+
+    # Seuils / affichages
     p.add_argument("--threshold", type=float, default=0.6, help="Seuil pour filtrer les paires faibles")
     p.add_argument("--show_below", type=int, default=30, help="Nb d'exemples à afficher sous le seuil")
+    p.add_argument("--range_low", type=float, default=0.5, help="Borne inférieure de l'intervalle à lister")
+    p.add_argument("--range_high", type=float, default=0.7, help="Borne supérieure de l'intervalle à lister")
+    p.add_argument("--show_between", type=int, default=30, help="Nb d'exemples à afficher dans l'intervalle")
+    p.add_argument("--show_examples", type=int, default=3, help="Nb d'exemples extrêmes à afficher")
 
     # Modèle et perf
     p.add_argument("--model", type=str, default="intfloat/multilingual-e5-base", help="Nom du modèle d'embeddings")
@@ -69,7 +79,6 @@ def parse_args() -> argparse.Namespace:
 
     # Sorties
     p.add_argument("--output_csv", type=str, default=None, help="Chemin pour sauver les scores par ligne")
-    p.add_argument("--show_examples", type=int, default=3, help="Nb d'exemples à afficher")
 
     return p.parse_args()
 
@@ -129,7 +138,11 @@ def compute_embeddings(model: SentenceTransformer, texts: List[str], batch_size:
 def main():
     args = parse_args()
 
-    print("\n=== Chargement des données ===")
+    # Sanity sur intervalle
+    if args.range_low > args.range_high:
+        args.range_low, args.range_high = args.range_high, args.range_low
+
+    print("=== Chargement des données ===")
     df = load_data(args)
     check_columns(df, args.anchor_col, args.generated_col)
     keep_cols = [args.anchor_col, args.generated_col] + ([args.model_col] if args.model_col in df.columns else [])
@@ -140,23 +153,23 @@ def main():
         raise SystemExit("Aucune ligne à traiter après filtrage")
     print(f"Lignes à traiter: {n}")
 
-    print("\n=== Chargement du modèle d'embeddings ===")
+    print("=== Chargement du modèle d'embeddings ===")
     print(f"Modèle: {args.model}")
     print(f"Colonne modèle: {args.model_col if args.model_col in df.columns else 'N/A'}")
     print("trust_remote_code: True")
     print(f"Seuil sous-similarité: {args.threshold} | Exemples à afficher: {args.show_below}")
+    print(f"Intervalle à lister: [{args.range_low}, {args.range_high}] | Exemples: {args.show_between}")
     model = SentenceTransformer(args.model, trust_remote_code=True)
 
     anchors = df[args.anchor_col].astype(str).tolist()
     gens = df[args.generated_col].astype(str).tolist()
-
     models = df[args.model_col].astype(str).tolist() if args.model_col in df.columns else None
 
-    print("\n=== Encodage des textes ===")
+    print("=== Encodage des textes ===")
     A = compute_embeddings(model, anchors, args.batch_size)
     B = compute_embeddings(model, gens, args.batch_size)
 
-    print("\n=== Calcul des similarités ===")
+    print("=== Calcul des similarités ===")
     sims = cosine_sim(A, B)
 
     # Stats de base
@@ -176,24 +189,24 @@ def main():
     thresholds = [0.3, 0.5, 0.7, 0.8, 0.9]
     shares = {f">={t}": float(np.mean(sims >= t)) for t in thresholds}
 
-    print("\n=== Résumé ===")
+    print("=== Résumé ===")
     print(f"Date: {datetime.utcnow().isoformat()}Z")
     if args.dataset_name:
         print(f"Dataset: {args.dataset_name} | split: {args.split}")
     else:
         print(f"Fichiers: {args.data_files} | format: {args.file_format}")
-    print(f"Colonnes: anchor='{args.anchor_col}', generated='{args.generated_col}'")
+    print(f"Colonnes: anchor='{args.anchor_col}', generated='{args.generated_col}', model_col='{args.model_col if args.model_col in df.columns else 'N/A'}'")
     print(f"Modèle: {args.model}")
 
-    print("\nStatistiques (cosine):")
+    print("Statistiques (cosine):")
     for k in ["n", "mean", "median", "std", "min", "p10", "p25", "p75", "p90", "max"]:
         print(f"  {k:>6}: {stats[k]:.6f}" if k != "n" else f"  {k:>6}: {stats[k]}")
 
-    print("\nParts au-dessus des seuils:")
+    print("Parts au-dessus des seuils:")
     for k in [f">={t}" for t in thresholds]:
         print(f"  {k:>6}: {shares[k]*100:.2f}%")
 
-    # Analyse sous le seuil demandé
+    # Sous seuil
     print(f"=== Paires sous le seuil {args.threshold:.2f} ===")
     below_mask = sims < args.threshold
     nb_below = int(np.sum(below_mask))
@@ -211,7 +224,25 @@ def main():
     else:
         print("Aucune paire sous le seuil.")
 
-    # Pourcentage par modèle
+    # Intervalle [range_low, range_high]
+    print(f"=== Paires dans l'intervalle [{args.range_low:.2f}, {args.range_high:.2f}] ===")
+    between_mask = (sims >= args.range_low) & (sims <= args.range_high)
+    nb_between = int(np.sum(between_mask))
+    pct_between = nb_between / n
+    print(f"Total dans l'intervalle: {nb_between} / {n} ({pct_between*100:.2f}%)")
+    idx_between = np.where(between_mask)[0]
+    if len(idx_between) > 0:
+        idx_sorted_b = idx_between[np.argsort(sims[idx_between])]
+        show_idx_b = idx_sorted_b[:min(args.show_between, len(idx_sorted_b))]
+        print(f"=== Exemples dans l'intervalle ({len(show_idx_b)}) ===")
+        for i, idx in enumerate(show_idx_b, 1):
+            print(f"[{i}] sim={sims[idx]:.4f}")
+            print(f"  anchor   : {anchors[idx][:400]}")
+            print(f"  generated: {gens[idx][:400]}")
+    else:
+        print("Aucune paire dans cet intervalle.")
+
+    # Pourcentage par modèle (sous seuil)
     if models is not None:
         arr_models = np.array(models)
         unique = np.unique(arr_models)
@@ -237,7 +268,7 @@ def main():
     best_idx = ord_idx[-topk:][::-1]
 
     def show_block(title: str, idxs: np.ndarray):
-        print(f"\n=== {title} ({len(idxs)}) ===")
+        print(f"=== {title} ({len(idxs)}) ===")
         for i, idx in enumerate(idxs, 1):
             print(f"[{i}] sim={sims[idx]:.4f}")
             print(f"  anchor   : {anchors[idx][:400]}")
@@ -255,9 +286,12 @@ def main():
         }
         if models is not None:
             cols["model"] = models
+        # Flags utiles
+        cols["below_threshold"] = below_mask.tolist()
+        cols["in_between_range"] = between_mask.tolist()
         out_df = pd.DataFrame(cols)
         out_df.to_csv(out_path, index=False)
-        print(f"\nScores sauvegardés: {out_path}")
+        print(f"Scores sauvegardés: {out_path}")
 
 
 if __name__ == "__main__":
