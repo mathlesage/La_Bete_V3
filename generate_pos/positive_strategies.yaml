@@ -52,6 +52,7 @@ strategies:
       Réécris le texte suivant en conservant tout le sens et le niveau de détail de l'original, mais avec un vocabulaire et une syntaxe totalement différents.
       Instruction de Style pour la réécriture : {style_instruction}
       Texte original : --- {anchor_text} ---
+      Ne renvoie que le nouveau texte, sans aucune autre information.
     requires_style: true
 
   paraphrase_longue_fidele:
@@ -60,6 +61,8 @@ strategies:
       Effectue une paraphrase approfondie du long texte suivant pour produire un nouveau texte, conservant toutes les idées mais avec une formulation entièrement originale, sans mots en commun, une structure et un ordre des idées différents.
       Instruction de Style pour la réécriture : {style_instruction}
       Texte original : --- {anchor_text} ---
+      Ne renvoie que le nouveau texte, sans aucune autre information.
+
     requires_style: true
 
   paraphrase_similaire:
@@ -68,6 +71,8 @@ strategies:
       Réécris le court texte suivant avec des mots et une structure différents, en gardant le même sens et une longueur similaire.
       Instruction de Style pour la réécriture : {style_instruction}
       Texte original : --- {anchor_text} ---
+      Ne renvoie que le nouveau texte, sans aucune autre information.
+
     requires_style: true
 
   resume_court_avec_style:
@@ -77,6 +82,8 @@ strategies:
       Synthétise le texte suivant en un résumé d'environ {word_count} mots, en utilisant le plus possible de nouveaux mots.
       Instruction de Style Impérative pour le résumé : {style_instruction}
       Texte à résumer : --- {anchor_text} ---
+      Ne renvoie que le résumer, sans aucune autre information.
+
     requires_style: true
 
   resume_moyen_avec_style:
@@ -86,6 +93,8 @@ strategies:
       Rédige un résumé d'environ {word_count} mots du texte suivant, en utilisant le moins de mots possible du texte original.
       Instruction de Style Impérative pour le résumé : {style_instruction}
       Texte à résumer : --- {anchor_text} ---
+      Ne renvoie que le résumer, sans aucune autre information.
+
     requires_style: true
 
   elaboration_longue_depuis_medium:
@@ -94,7 +103,9 @@ strategies:
     prompt: |
       En te basant sur le texte suivant, rédige un texte plus détaillé pour atteindre une longueur d'environ {word_count} mots. Change totalement la structure, le vocabulaire et le style et utilise le plus possible de mots nouveaux.
       Instruction de Style pour le nouveau texte : {style_instruction}
-      Texte de base : --- {anchor_text} ---
+      Texte de base : --- {anchor_text} --
+-     Ne renvoie que le nouveau texte, sans aucune autre information.
+
     requires_style: true
 
   elaboration_medium_depuis_court:
@@ -104,6 +115,8 @@ strategies:
       Développe l'idée concise du texte suivant en un texte détaillé d'environ {word_count} mots. Change totalement la structure, le vocabulaire et utilise le plus possible de mots nouveaux.
       Instruction de Style pour le nouveau texte : {style_instruction}
       Texte de base : --- {anchor_text} ---
+      Ne renvoie que le nouveau texte, sans aucune autre information.
+
     requires_style: true
 
 # ===================================================================
