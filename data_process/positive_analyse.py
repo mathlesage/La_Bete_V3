@@ -186,7 +186,7 @@ def main():
         "max": float(np.max(sims)),
     }
 
-    thresholds = [0.3, 0.5, 0.7, 0.8, 0.9]
+    thresholds = [0.3, 0.6, 0.7, 0.8, 0.9]
     shares = {f">={t}": float(np.mean(sims >= t)) for t in thresholds}
 
     print("=== Résumé ===")
