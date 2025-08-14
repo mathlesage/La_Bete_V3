@@ -62,7 +62,6 @@ strategies:
       Instruction de Style pour la réécriture : {style_instruction}
       Texte original : --- {anchor_text} ---
       Ne renvoie que le nouveau texte, sans aucune autre information.
-
     requires_style: true
 
   paraphrase_similaire:
@@ -72,7 +71,6 @@ strategies:
       Instruction de Style pour la réécriture : {style_instruction}
       Texte original : --- {anchor_text} ---
       Ne renvoie que le nouveau texte, sans aucune autre information.
-
     requires_style: true
 
   resume_court_avec_style:
@@ -82,8 +80,7 @@ strategies:
       Synthétise le texte suivant en un résumé d'environ {word_count} mots, en utilisant le plus possible de nouveaux mots.
       Instruction de Style Impérative pour le résumé : {style_instruction}
       Texte à résumer : --- {anchor_text} ---
-      Ne renvoie que le résumer, sans aucune autre information.
-
+      Ne renvoie que le résumé, sans aucune autre information.
     requires_style: true
 
   resume_moyen_avec_style:
@@ -93,8 +90,7 @@ strategies:
       Rédige un résumé d'environ {word_count} mots du texte suivant, en utilisant le moins de mots possible du texte original.
       Instruction de Style Impérative pour le résumé : {style_instruction}
       Texte à résumer : --- {anchor_text} ---
-      Ne renvoie que le résumer, sans aucune autre information.
-
+      Ne renvoie que le résumé, sans aucune autre information.
     requires_style: true
 
   elaboration_longue_depuis_medium:
@@ -103,9 +99,8 @@ strategies:
     prompt: |
       En te basant sur le texte suivant, rédige un texte plus détaillé pour atteindre une longueur d'environ {word_count} mots. Change totalement la structure, le vocabulaire et le style et utilise le plus possible de mots nouveaux.
       Instruction de Style pour le nouveau texte : {style_instruction}
-      Texte de base : --- {anchor_text} --
--     Ne renvoie que le nouveau texte, sans aucune autre information.
-
+      Texte de base : --- {anchor_text} ---
+      Ne renvoie que le nouveau texte, sans aucune autre information.
     requires_style: true
 
   elaboration_medium_depuis_court:
@@ -116,7 +111,6 @@ strategies:
       Instruction de Style pour le nouveau texte : {style_instruction}
       Texte de base : --- {anchor_text} ---
       Ne renvoie que le nouveau texte, sans aucune autre information.
-
     requires_style: true
 
 # ===================================================================
@@ -144,7 +138,7 @@ recettes_par_categorie:
       poids: 20
     - strategie: elaboration_longue_depuis_medium
       poids: 10
-      
+
   short:
     - strategie: generate_title
       poids: 30
@@ -153,19 +147,15 @@ recettes_par_categorie:
     - strategie: elaboration_medium_depuis_court
       poids: 20
 
-
 llm:
-  # Configuration des LLMs pour la génération de textes positifs
   rotation:
     - model: "openai/gpt-4.1-nano"
-      provider: openai
+      provider: "openai"
     - model: "google/gemini-2.5-flash-lite"
       provider: "google-vertex"
     - model: "meta-llama/llama-4-maverick"
       provider: "lambda"
     - model: "qwen/qwen3-235b-a22b-2507"
       provider: "baseten"
-
     - model: "x-ai/grok-3-mini"
       provider: "xAI"
-  

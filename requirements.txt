@@ -1,9 +1,6 @@
-os
-yaml
-json
 openai
 datasets
-numpy 
+numpy
 pandas
 tqdm
 transformers
@@ -13,6 +10,5 @@ torchvision
 torchtext
 torchmetrics
 sentencepiece
-sentence_transformers
+sentence-transformers
 scipy
-
