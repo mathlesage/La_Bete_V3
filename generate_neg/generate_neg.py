@@ -197,6 +197,7 @@ def load_done_uids(out_repo: str, require_negatives: bool = True) -> set:
     return done
 
 def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, private: Optional[bool]=None) -> None:
+    global push_counter  # <-- UNE SEULE déclaration globale, tout en haut de la fonction
     if not records:
         return
     split_name = f"chunk_{chunk_id:06d}"
@@ -208,7 +209,6 @@ def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, priva
             ds.push_to_hub(repo_id, split=split_name, private=private)
         print(f"[push] {len(records)} éléments -> {repo_id}:{split_name}")
         with push_counter_lock:
-            global push_counter
             push_counter += 1
     except Exception as e:
         sys.stderr.write(f"[push][ERREUR] {e}\n")
@@ -218,8 +218,8 @@ def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, priva
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
         sys.stderr.write(f"[push] Dump local: {fallback}\n")
         with push_counter_lock:
-            global push_counter
             push_counter += 1
+
 
 def flush_if_needed(out_repo: str, chunk_size: int, private: Optional[bool]) -> None:
     global buffer_records, _next_chunk_id
