@@ -500,7 +500,7 @@ def main():
 
     # Encodage
     global encoder_model
-    encoder_model = SentenceTransformer(args.encoder)
+    encoder_model = SentenceTransformer(args.encoder, trust_remote_code=True)
 
     # Reprise
     done_uids = set()
