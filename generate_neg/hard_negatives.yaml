@@ -12,7 +12,7 @@ prompts:
         - "Qu'est-ce que React ?" → "Qu'est-ce que un boa ?"
         - "Comment déboguer du code ?" → "Comment tester du judo ?"
         
-        Garde la même structure, change juste le sujet principal:
+        Garde la même structure, change juste le sujet principal pour un sujet totalement différent:
         Ne renvoie que le paragraphe modifié.
 
 
@@ -86,7 +86,7 @@ prompts:
 
     - name: "syntactic_similarity"
       prompt: |
-        Garde le type de question et les mots grammaticaux, change le contenu dans un domaine similaire.
+        Garde le type de question et les mots grammaticaux, change le contenu dans un domaine opposé.
         
         Paragraphe à modifier: {query}
         
@@ -103,14 +103,9 @@ prompts:
     - name: "near_miss"
       prompt: |
 
-        Change 2-3 mots techniques en gardant la structure exacte.
+        Change les mots techniques avec des mots qui non rien avoir en gardant la structure exacte.
         
         Paragraphe à modifier: {positive}
-        
-        EXEMPLES:
-        - "Téléchargez Python depuis python.org" → "Téléchargez Java depuis java.com"
-        - "React est une bibliothèque JavaScript" → "Vue est une bibliothèque JavaScript"
-        - "Utilisez console.log pour déboguer" → "Utilisez print pour déboguer"
         
         Modification minimale mais significative:
         Ne renvoie que le paragraphe modifié.
@@ -158,16 +153,13 @@ prompts:
           Identifie le plus possibe de mot clés à détourner 
           Respecte la grammaire et la syntaxe
           Si aucun homonyme pertinent n’existe, change le domaine
-          EXEMPLES:
-          "Python s'installe facilement" → "Le Python s'installe facilement dans la jungle"
-          "React est populaire" → "Plus on es react plus on est populaire"
-          "Docker simplifie le déploiement" → "Au port, le docker simplifie l’embarquement"
+
           Ne renvoie que le paragraphe modifié.
 
 
     - name: "hard_negative_polysemy_bait"
       prompt: |
-          Transforme la requête en une phrase leurre négative et plausible qui contredit subtilement l’affirmation en réinterprétant 1 à 3 mots clés via polysémie, homonymie ou homophonie
+          Transforme le paragraphe en une phrase leurre négative et plausible qui contredit subtilement l’affirmation en réinterprétant 10 à 30 mots clés via polysémie, homonymie ou homophonie
 
           requête: {positive}
 
