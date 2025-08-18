@@ -5,7 +5,7 @@ prompts:
       prompt: |
         Remplace les mots techniques par des équivalents dans un domaine proche.
         
-        Phrase: {query}
+        Paragraphe à modifier: {query}
         
         EXEMPLES:
         - "Comment installer Python ?" → "Comment installer Ruby ?"
@@ -13,12 +13,33 @@ prompts:
         - "Comment déboguer du code ?" → "Comment tester du code ?"
         
         Garde la même structure, change juste le sujet principal:
+        Ne renvoie que le paragraphe modifié.
+
+
+    - name: "homonym_shift"
+      prompt: |
+          Remplace autant que possible les mots les plus importants par leurs homonymes, homophones ou un autre sens plausible, tout en gardant une phrase naturelle et cohérente
+
+          Paragraphe à modifier: {query}
+
+          Règles:
+          Identifie le plus possibe de mot clés à détourner 
+          Respecte la grammaire et la syntaxe
+          Si aucun homonyme pertinent n’existe, change le domaine
+          EXEMPLES:
+          "Python s'installe facilement" → "Le Python s'installe facilement dans la jungle"
+          "React est populaire" → "Tu es trop react"
+          "Docker simplifie le déploiement" → "Au port, le docker simplifie l’embarquement"
+          Ne renvoie que le paragraphe modifié.
+
+
+
 
     - name: "structure_copy"
       prompt: |
         Copie EXACTEMENT la structure grammaticale mais change UNIQUEMENT le domaine.
         
-        Phrase: {query}
+        Paragraphe à modifier: {query}
         
         RÈGLE: Garde chaque mot de structure (comment, qu'est-ce, le, la, de, etc.)
         
@@ -28,39 +49,31 @@ prompts:
         - "Pourquoi Docker est-il utile ?" → "Pourquoi l'exercice est-il important ?"
         
         Même structure EXACTE, domaine différent:
+        Ne renvoie que le paragraphe modifié.
 
-    - name: "opposite_intent"
-      prompt: |
-        Inverse ou nie l'action principale.
-        
-        Phrase: {query}
-        
-        EXEMPLES:
-        - "Comment installer Python ?" → "Comment éviter d'installer Python ?"
-        - "Comment créer une API ?" → "Comment supprimer une API ?"
-        - "Qu'est-ce que Docker ?" → "Qu'est-ce qui remplace Docker ?"
-        - "Pourquoi utiliser Git ?" → "Pourquoi ne pas utiliser Git ?"
-        
-        Action opposée ou négation:
+
+
+
+
 
     - name: "domain_shift"
       prompt: |
         Garde les mots de liaison et la structure, change le domaine technique.
         
-        Phrase: {query}
+        Paragraphe à modifier: {query}
         
         EXEMPLES:
         - "Comment configurer Git pour un projet ?" → "Comment préparer le sol pour un jardin ?"
         - "Qu'est-ce qu'une API REST ?" → "Qu'est-ce qu'une recette française ?"
         - "Pourquoi utiliser Docker ?" → "Pourquoi faire du sport ?"
         
-        Structure similaire, domaine différent mais connexe:
+        Structure ultra similaire, domaine différent mais proche:
 
     - name: "partial_overlap"
       prompt: |
-        Utilise le mot-clé principal dans une question complètement différente.
+        Utilise le plus possibles les mots-clés principal dans une question différente.
         
-        Phrase: {query}
+        Paragraphe à modifier: {query}
         
         EXEMPLES:
         - "Comment installer Python ?" → "Python est-il gratuit ?"
@@ -68,28 +81,31 @@ prompts:
         - "Comment utiliser Docker ?" → "Docker Desktop vs Docker Engine ?"
         - "Pourquoi Git est important ?" → "Git vs SVN en entreprise ?"
         
-        Même mot-clé, question totalement différente:
+        Même mot-clé, question différente:
+        Ne renvoie que le paragraphe modifié.
 
     - name: "syntactic_similarity"
       prompt: |
-        Garde le type de question et les mots grammaticaux, change le contenu.
+        Garde le type de question et les mots grammaticaux, change le contenu dans un domaine similaire.
         
-        Phrase: {query}
+        Paragraphe à modifier: {query}
         
         EXEMPLES:
-        - "Comment installer Python sur Mac ?" → "Comment cuisiner du riz au four ?"
-        - "Qu'est-ce que Docker pour les débutants ?" → "Qu'est-ce que le yoga pour les seniors ?"
-        - "Pourquoi le code ne marche pas ?" → "Pourquoi la plante ne pousse pas ?"
+        - "Comment installer Python sur Mac ?" → "Comment cuisiner du python au four ?"
+        - "Qu'est-ce que Docker pour les débutants ?" → "Qu'est-ce que la data science pour les seniors ?"
+        - "Pourquoi le code ne marche pas ?" → "Pourquoi les tests ne marchent pas ?"
         
         Même type de phrase, contenu différent:
+        Ne renvoie que le paragraphe modifié.
+
 
   positive_based:
     - name: "near_miss"
       prompt: |
+
         Change 2-3 mots techniques en gardant la structure exacte.
         
-        Réponse: {positive}
-        Query: {query}
+        Paragraphe à modifier: {positive}
         
         EXEMPLES:
         - "Téléchargez Python depuis python.org" → "Téléchargez Java depuis java.com"
@@ -97,27 +113,14 @@ prompts:
         - "Utilisez console.log pour déboguer" → "Utilisez print pour déboguer"
         
         Modification minimale mais significative:
+        Ne renvoie que le paragraphe modifié.
 
-    - name: "over_generalization"
-      prompt: |
-        Ajoute "tous", "toujours", "chaque" en gardant le domaine.
-        
-        Réponse: {positive}
-        Query: {query}
-        
-        EXEMPLES:
-        - "Python s'installe depuis python.org" → "Tous les langages s'installent depuis leur site"
-        - "React utilise JSX" → "Toutes les bibliothèques JavaScript utilisent JSX"
-        - "Git track les changements" → "Chaque système de version track les changements"
-        
-        Généralisation dans le même domaine:
 
     - name: "context_swap"
       prompt: |
         Remplace l'objet par un équivalent du même domaine.
         
-        Réponse: {positive}
-        Query: {query}
+        Paragraphe à modifier: {positive}
         
         EXEMPLES:
         - "Installez Python avec pip" → "Installez Node avec npm"
@@ -125,32 +128,79 @@ prompts:
         - "React crée des composants" → "Angular crée des directives"
         
         Même action, objet similaire:
+        Ne renvoie que le paragraphe modifié.
 
-    - name: "temporal_shift"
+
+    - name: "opposite_intent"
       prompt: |
-        Ajoute une référence temporelle ou de version.
+        Inverse et nie l'action principale.
         
-        Réponse: {positive}
-        Query: {query}
+        Paragraphe à modifier: {positive}
         
         EXEMPLES:
-        - "Python s'installe facilement" → "Python 2 s'installait différemment"
-        - "React est populaire" → "React était nouveau en 2013"
-        - "Docker simplifie le déploiement" → "Docker a remplacé les machines virtuelles"
+        - "Comment installer Python ?" → "Comment éviter d'installer Python ?"
+        - "Le chien est beau" → "Le chien est laid"
+        - "Je vais aller à la piscine" → "Je ne suis jamais allé à la piscine"
+        - "Le vert est un mélange de bleu et jaune" → "Le vert n'est pas du tout un mélange de bleu et jaune."
         
-        Ajoute un aspect temporel:
+        Action opposée et négation:
+        Ne renvoie que le paragraphe modifié.
 
-    - name: "causal_reversal"
+
+
+    - name: "homonym_shift"
       prompt: |
-        Échange le sujet et l'objet ou inverse qui fait quoi.
-        
-        Réponse: {positive}
-        Query: {query}
-        
-        EXEMPLES:
-        - "Python installe les packages" → "Les packages installent Python"
-        - "React affiche les composants" → "Les composants contrôlent React"
-        - "Docker lance les conteneurs" → "Les conteneurs démarrent Docker"
-        - "L'utilisateur configure Git" → "Git configure l'utilisateur"
-        
-        Sujet devient objet ou agent devient patient:
+          Remplace autant que possible les mots les plus importants par leurs homonymes et garde le plus possible la structure et le plus de mots possible, homophones ou un autre sens plausible, tout en gardant une phrase naturelle et cohérente
+
+          Paragraphe à modifier: {positive}
+
+          Règles:
+          Identifie le plus possibe de mot clés à détourner 
+          Respecte la grammaire et la syntaxe
+          Si aucun homonyme pertinent n’existe, change le domaine
+          EXEMPLES:
+          "Python s'installe facilement" → "Le Python s'installe facilement dans la jungle"
+          "React est populaire" → "Plus on es react plus on est populaire"
+          "Docker simplifie le déploiement" → "Au port, le docker simplifie l’embarquement"
+          Ne renvoie que le paragraphe modifié.
+
+
+    - name: "hard_negative_polysemy_bait"
+      prompt: |
+          Transforme la requête en une phrase leurre négative et plausible qui contredit subtilement l’affirmation en réinterprétant 1 à 3 mots clés via polysémie, homonymie ou homophonie
+
+          requête: {positive}
+
+          Règles:
+          Conserve 60 à 90 % des mots d’origine
+          Remplace 1 à 3 mots clés par un sens concurrent, un homonyme ou un homophone proche
+          Introduis un renversement discret d’attribut, de comparatif, d’unité, de version ou de date
+          Reste grammatical, naturel et proche du domaine
+          Ne révèle jamais qu’il s’agit d’un leurre
+          Sors une seule phrase, sans guillemets ni métalangage
+
+          EXEMPLES:
+          "Go compile vite" → "Le go se joue lentement en tournoi"
+          "Rust évite les data races" → "La rouille n’évite pas les courses de données"
+          "SQL joint les tables" → "Le sequel sépare souvent les tables"
+          "Swift est rapide sur iOS" → "Le swift ralentit sur iOS"
+          "TensorFlow accélère l'entraînement" → "Le flux tensoriel ralentit l’entraînement sur la même carte"
+          "Git fusionne proprement" → "Le gîte fusionne rarement proprement"
+          Ne renvoie que le paragraphe modifié.
+
+
+
+
+llm:
+  rotation:
+    - model: "openai/gpt-4.1-nano"
+      provider: "openai"
+    - model: "google/gemini-2.5-flash-lite"
+      provider: "google-vertex"
+    - model: "meta-llama/llama-4-maverick"
+      provider: "lambda"
+    - model: "qwen/qwen3-235b-a22b-2507"
+      provider: "baseten"
+    - model: "deepseek/deepseek-chat-v3-0324"
+      provider: "DeepInfra"
+    

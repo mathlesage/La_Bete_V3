@@ -15,6 +15,12 @@ MODELS = {
     ],
     "google-vertex": [
         "google/gemini-2.5-flash-lite",
+    ],
+    "lambda": [
+        "meta-llama/llama-4-maverick",
+    ],
+    "baseten": [
+        "qwen/qwen3-235b-a22b-2507",
     ]
 }
 def load_prompts():
@@ -34,57 +40,6 @@ def load_prompts():
                 'prompt': 'Modifie: {positive}\nPour la query: {query}\nModification:'
             }]
         }
-
-def apply_aggressive_modification(text: str, original: str) -> str:
-    """
-    Applique des modifications agressives si le texte est trop similaire
-    """
-    if not text:
-        return None
-    
-    # Liste de transformations radicales par domaine
-    transformations = {
-        "python": ["jardinage", "cuisine", "astronomie", "danse"],
-        "react": ["chimie", "océan", "histoire", "musique"],
-        "installer": ["détruire", "manger", "observer", "dessiner"],
-        "javascript": ["biologie", "géologie", "poésie", "sport"],
-        "gâteau": ["moteur", "équation", "planète", "symphonie"],
-        "faire": ["défaire", "étudier", "rêver", "oublier"]
-    }
-    
-    modified = text.lower()
-    original_lower = original.lower()
-    
-    # Remplacer les mots trop similaires
-    for key, replacements in transformations.items():
-        if key in original_lower and key in modified:
-            replacement = random.choice(replacements)
-            modified = modified.replace(key, replacement)
-    
-    # Si toujours trop de mots en commun, générer quelque chose de radical
-    original_words = set(original_lower.split())
-    modified_words = set(modified.split())
-    common_words = original_words & modified_words
-    
-    # Enlever les mots communs triviaux
-    trivial = {"le", "la", "un", "une", "de", "du", "des", "et", "ou", "à", "?", "comment", "qu'est-ce", "que"}
-    common_words = common_words - trivial
-    
-    if len(common_words) > 2:
-        # Trop similaire, créer quelque chose de complètement différent
-        templates = [
-            "Les oiseaux migrent vers le sud en hiver.",
-            "La théorie quantique explique les particules subatomiques.",
-            "Les champignons poussent dans les forêts humides.",
-            "Le jazz est né à la Nouvelle-Orléans.",
-            "Les glaciers fondent à cause du réchauffement.",
-            "La photosynthèse transforme la lumière en énergie.",
-            "Les volcans entrent en éruption de façon imprévisible.",
-            "L'architecture gothique date du Moyen Âge."
-        ]
-        return random.choice(templates)
-    
-    return modified.capitalize()
 
 def generate_hard_negative(prompt: str, model: str = None, provider: str = None, original_text: str = "") -> str:
     """
@@ -139,11 +94,7 @@ def generate_hard_negative(prompt: str, model: str = None, provider: str = None,
         )
         
         result = response.choices[0].message.content.strip()
-        
-        # Appliquer des modifications agressives si nécessaire
-        if original_text:
-            result = apply_aggressive_modification(result, original_text)
-        
+
         return result
     
     except Exception as e:

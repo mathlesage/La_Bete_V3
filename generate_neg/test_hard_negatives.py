@@ -18,8 +18,8 @@ class EmbeddingTester:
         Vous pouvez changer pour 'Qwen/Qwen2-0.5B' ou tout autre modèle d'embedding.
         """
         print(f"Chargement du modèle {model_name}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        self.model = AutoModel.from_pretrained(model_name, trust_remote_code=True)
         self.model.eval()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
