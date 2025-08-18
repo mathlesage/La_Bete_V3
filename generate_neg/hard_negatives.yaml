@@ -3,14 +3,14 @@ prompts:
   query_based:
     - name: "semantic_drift"
       prompt: |
-        Remplace les mots techniques par des équivalents dans un domaine proche.
+        Remplace les mots techniques par des équivalents dans un autre domaine.
         
         Paragraphe à modifier: {query}
         
         EXEMPLES:
-        - "Comment installer Python ?" → "Comment installer Ruby ?"
-        - "Qu'est-ce que React ?" → "Qu'est-ce que Vue.js ?"
-        - "Comment déboguer du code ?" → "Comment tester du code ?"
+        - "Comment installer Python ?" → "Comment installer Fortnite ?"
+        - "Qu'est-ce que React ?" → "Qu'est-ce que un boa ?"
+        - "Comment déboguer du code ?" → "Comment tester du judo ?"
         
         Garde la même structure, change juste le sujet principal:
         Ne renvoie que le paragraphe modifié.
@@ -58,7 +58,7 @@ prompts:
 
     - name: "domain_shift"
       prompt: |
-        Garde les mots de liaison et la structure, change le domaine technique.
+        Garde les mots de liaison et la structure, change le domaine.
         
         Paragraphe à modifier: {query}
         
@@ -67,7 +67,7 @@ prompts:
         - "Qu'est-ce qu'une API REST ?" → "Qu'est-ce qu'une recette française ?"
         - "Pourquoi utiliser Docker ?" → "Pourquoi faire du sport ?"
         
-        Structure ultra similaire, domaine différent mais proche:
+        Structure ultra similaire, domaine différent:
 
     - name: "partial_overlap"
       prompt: |

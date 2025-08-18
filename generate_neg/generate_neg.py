@@ -330,9 +330,8 @@ def process_item(idx_global: int,
 
     rng = random.Random(seed + source_index if seed is not None else None)
 
-    anchor = row.get("anchor_text") or row.get("query") or row.get("question")
-    positive = row.get("generated_text") or row.get("positive") or row.get("answer")
-
+    anchor = row.get("anchor_text")
+    positive = row.get("generated_text")
     if not isinstance(positive, str) or not positive.strip():
         return {"error": "missing_generated_text", "source_index": source_index}
     if not isinstance(anchor, str) or not anchor.strip():
@@ -352,7 +351,7 @@ def process_item(idx_global: int,
     while tries < max_tries:
         tries += 1
         neg1_try, name_try, mp_try = gen_one_negative(
-            base_text=pos,
+            base_text=anchor,
             prompt_templates=prompts_cfg.get("positive_based", []),
             llm_cfg=llm_cfg,
             rng=rng,
@@ -383,7 +382,7 @@ def process_item(idx_global: int,
     while tries < max_tries:
         tries += 1
         neg2_try, name_try, mp_try = gen_one_negative(
-            base_text=anchor,
+            base_text=pos,
             prompt_templates=prompts_cfg.get("query_based", []),
             llm_cfg=llm_cfg,
             rng=rng,
