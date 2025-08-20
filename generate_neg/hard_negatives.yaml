@@ -25,7 +25,7 @@ prompts:
           Règles:
           Identifie le plus possibe de mot clés à détourner 
           Respecte la grammaire et la syntaxe
-          Si aucun homonyme pertinent n’existe, change le domaine
+          Si aucun homonyme pertinent n’existe, change totalement de domaine
           EXEMPLES:
           "Python s'installe facilement" → "Le Python s'installe facilement dans la jungle"
           "React est populaire" → "Tu es trop react"
@@ -71,17 +71,17 @@ prompts:
 
     - name: "partial_overlap"
       prompt: |
-        Utilise le plus possibles les mots-clés principal dans une question différente.
+        Utilise le plus possibles les mots-clés principal dans une question/paragraphe totalement différente.
         
         Paragraphe à modifier: {query}
         
         EXEMPLES:
         - "Comment installer Python ?" → "Python est-il gratuit ?"
         - "Qu'est-ce que React ?" → "React ou Angular pour débuter ?"
-        - "Comment utiliser Docker ?" → "Docker Desktop vs Docker Engine ?"
+        - "Il y a beaucoup de vent à la plage" → "Il y a plein de crabe qui sont trop mignon à la plage"
         - "Pourquoi Git est important ?" → "Git vs SVN en entreprise ?"
         
-        Même mot-clé, question différente:
+        Même mot-clé, phrase différente:
         Ne renvoie que le paragraphe modifié.
 
     - name: "syntactic_similarity"
@@ -128,7 +128,7 @@ prompts:
 
     - name: "opposite_intent"
       prompt: |
-        Inverse et nie l'action principale.
+        Inverse et va  l'opposer du paragraphe..
         
         Paragraphe à modifier: {positive}
         
@@ -138,7 +138,7 @@ prompts:
         - "Je vais aller à la piscine" → "Je ne suis jamais allé à la piscine"
         - "Le vert est un mélange de bleu et jaune" → "Le vert n'est pas du tout un mélange de bleu et jaune."
         
-        Action opposée et négation:
+        Action totalement opposée:
         Ne renvoie que le paragraphe modifié.
 
 

@@ -158,9 +158,9 @@ if __name__ == "__main__":
     Exemple 1: local -> juste créer le DatasetDict filtré
     """
     make_and_push_filtered_train_dataset(
-        repo_id_in="matheoqtb/ancre_querry_cos",
-        cos_col="cos_sim_pos",
-        threshold=0.60,
-        repo_id_out="matheoqtb/ancre_querry_cos_filtered_train",
+        repo_id_in="matheoqtb/ancre_querry_neg_all",
+        cos_col="cos_pos__neg_from_positive",
+        threshold=0.00,
+        repo_id_out="matheoqtb/ancre_querry_neg_cos_all",
         revision="main"
     )

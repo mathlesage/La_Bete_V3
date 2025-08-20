@@ -374,11 +374,11 @@ def make_record(idx_global: int,
 
 def main():
     parser = argparse.ArgumentParser(description="Génère des 'positives' en parallèle et push vers HF Hub par chunks")
-    parser.add_argument("--dataset", default="matheoqtb/ancre")
+    parser.add_argument("--dataset", default="matheoqtb/ancre-cleaned")
     parser.add_argument("--split", default=None)
     parser.add_argument("--column", default="positive")
     parser.add_argument("--yaml", default="positive_strategies.yaml")
-    parser.add_argument("--out-repo", default="matheoqtb/ancre_querry")
+    parser.add_argument("--out-repo", default="matheoqtb/ancre_querry2")
     parser.add_argument("--chunk-size", type=int, default=10000)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--seed", type=int, default=None)
@@ -386,7 +386,7 @@ def main():
     parser.add_argument("--resume-from-hub", action="store_true")
     parser.add_argument("--private", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--concurrency", type=int, default=8, help="Nombre de threads pour les requêtes")
+    parser.add_argument("--concurrency", type=int, default=100, help="Nombre de threads pour les requêtes")
     parser.add_argument("--no-progress", action="store_true", help="Désactive la barre de progression (utile pour logs CI)")
     args = parser.parse_args()
 
