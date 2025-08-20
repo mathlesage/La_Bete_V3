@@ -28,7 +28,6 @@ python run_positive_generation.py \
 import argparse
 import hashlib
 import json
-import math
 import os
 import random
 import signal
@@ -36,11 +35,12 @@ import sys
 import threading
 import time
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
+
 try:
     from tqdm import tqdm
 except Exception:
     tqdm = None
-from typing import Any, Dict, List, Optional, Tuple
 
 import yaml  # PyYAML
 from datasets import Dataset, load_dataset
@@ -116,29 +116,46 @@ def pick_llm_rotation(llm_config: Dict[str, Any], rng: random.Random) -> Tuple[s
     return model, provider
 
 def format_strategy_prompt(strategy: Dict[str, Any], anchor_text: str, style_instruction: Optional[str], word_count: Optional[int]) -> str:
+    """
+    Remplacement ciblé des seuls placeholders connus sans utiliser str.format,
+    afin d'éviter les KeyError si le prompt YAML contient des accolades non mappées.
+    """
     tpl = strategy.get("prompt", "")
-    subs = {
-        "anchor_text": anchor_text,
-        "style_instruction": style_instruction or "",
-        "word_count": word_count if word_count is not None else ""
-    }
-    try:
-        return tpl.format(**subs)
-    except KeyError:
-        out = tpl.replace("{anchor_text}", subs["anchor_text"])
-        out = out.replace("{style_instruction}", subs["style_instruction"])
-        out = out.replace("{word_count}", str(subs["word_count"]))
-        return out
+    out = tpl.replace("{anchor_text}", anchor_text)
+    out = out.replace("{style_instruction}", style_instruction or "")
+    out = out.replace("{word_count}", str(word_count) if word_count is not None else "")
+    return out
 
-def generate_with_openrouter(model: str, provider: Optional[str], prompt: str, system_prompt: Optional[str] = None, temperature: float = 0.7, max_tokens: int = 4000, sleep_ms: int = 0, x_title: str = 'Positive Generator', http_referer: str = 'https://local.test') -> Optional[str]:
-    system_prompt = system_prompt or "Tu es un expert en manipulation de langage, capable de suivre des instructions de réécriture complexes et nuancées."
-    extra_body = {}
+def generate_with_openrouter(
+    model: str,
+    provider: Optional[str],
+    prompt: str,
+    system_prompt: Optional[str] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 4000,
+    sleep_ms: int = 0,
+    x_title: str = 'Positive Generator',
+    http_referer: str = 'https://local.test',
+) -> Optional[str]:
+    system_prompt = system_prompt or (
+        "Tu es un expert en manipulation de langage, capable de suivre des instructions de réécriture complexes et nuancées."
+    )
+    extra_body: Dict[str, Any] = {}
     if provider:
         extra_body["provider"] = {"order": [provider], "allow_fallbacks": False}
+
+    # Throttle avant l'appel pour lisser le débit
+    if sleep_ms and sleep_ms > 0:
+        time.sleep(sleep_ms / 1000.0)
+
     try:
         if OpenAI is None:
             raise RuntimeError("La bibliothèque openai n'est pas disponible.")
-        client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"), default_headers={"X-Title": x_title, "HTTP-Referer": http_referer})
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            default_headers={"X-Title": x_title, "HTTP-Referer": http_referer},
+        )
         resp = client.chat.completions.create(
             model=model,
             messages=[
@@ -147,26 +164,21 @@ def generate_with_openrouter(model: str, provider: Optional[str], prompt: str, s
             ],
             temperature=temperature,
             max_tokens=max_tokens,
-            extra_body=extra_body
+            extra_body=extra_body,
         )
-        if sleep_ms > 0:
-            time.sleep(sleep_ms / 1000.0)
-        try:
-            choices = getattr(resp, 'choices', None)
-            if not choices:
-                import sys
-                sys.stderr.write(f"[API Error] Empty or missing choices for model={model} provider={provider} resp={getattr(resp, 'model_dump_json', lambda: str(resp))()[:500]}\n")
-                return None
-            content = getattr(choices[0].message, 'content', None)
-            if not content:
-                import sys
-                sys.stderr.write(f"[API Error] Missing content in first choice for model={model} provider={provider}\n")
-                return None
-            return content.strip()
-        except Exception as e:
-            import sys
-            sys.stderr.write(f"[API Error] Parse failure model={model} provider={provider}: {type(e).__name__}: {str(e)[:300]}\n")
+        choices = getattr(resp, 'choices', None)
+        if not choices:
+            sys.stderr.write(
+                f"[API Error] Empty or missing choices for model={model} provider={provider}\n"
+            )
             return None
+        content = getattr(choices[0].message, 'content', None)
+        if not content:
+            sys.stderr.write(
+                f"[API Error] Missing content in first choice for model={model} provider={provider}\n"
+            )
+            return None
+        return content.strip()
     except Exception as e:
         # On renvoie None et on log sur stderr, le record contiendra l'erreur
         sys.stderr.write(f"[API Error] {type(e).__name__}: {str(e)[:300]}\n")
@@ -180,6 +192,7 @@ def make_uid(dataset_name: str, split: str, text: str) -> str:
     h.update(b"|")
     h.update((text or "").encode("utf-8"))
     return h.hexdigest()
+
 def detect_next_chunk_id(repo_id: str) -> int:
     try:
         ds_dict = load_dataset(repo_id)
@@ -227,7 +240,7 @@ def load_existing_uids(repo_id: str) -> set:
 
 buffer_lock = threading.Lock()
 buffer_records: List[Dict[str, Any]] = []
-_next_chunk_id = None  # sera défini dans main
+_next_chunk_id: Optional[int] = None  # sera défini dans main
 push_counter = 0
 push_counter_lock = threading.Lock()
 
@@ -235,8 +248,7 @@ def get_push_counter() -> int:
     with push_counter_lock:
         return push_counter
 
-
-def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, private: Optional[bool]=None) -> None:
+def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, private: Optional[bool] = None) -> None:
     global push_counter
     if not records:
         return
@@ -253,12 +265,14 @@ def push_chunk(repo_id: str, records: List[Dict[str, Any]], chunk_id: int, priva
     except Exception as e:
         sys.stderr.write(f"[push][ERREUR] {e}\n")
         fallback = f"{split_name}.jsonl"
-        with open(fallback, "w", encoding="utf-8") as f:
-            for r in records:
-                f.write(json.dumps(r, ensure_ascii=False) + "\n")
-        sys.stderr.write(f"[push] Dump local: {fallback}\n")
-        with push_counter_lock:
-            push_counter += 1
+        try:
+            with open(fallback, "w", encoding="utf-8") as f:
+                for r in records:
+                    f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            sys.stderr.write(f"[push] Dump local: {fallback}\n")
+        finally:
+            with push_counter_lock:
+                push_counter += 1
 
 def flush_if_needed(out_repo: str, chunk_size: int, private: Optional[bool]) -> None:
     global buffer_records, _next_chunk_id
@@ -289,25 +303,24 @@ def flush_all(out_repo: str, private: Optional[bool]) -> None:
 # Worker
 # -------------------------------
 
-def make_record(idx_global: int,
-                source_index: int,
-                text: str,
-                dataset_name: str,
-                split: str,
-                q25: int,
-                q50: int,
-                styles: List[Dict[str, Any]],
-                strategies: Dict[str, Any],
-                recettes: Dict[str, Any],
-                llm_cfg: Dict[str, Any],
-                max_tokens: int,
-                sleep_ms: int,
-                seed: Optional[int]) -> Dict[str, Any]:
+def make_record(
+    idx_global: int,
+    source_index: int,
+    text: str,
+    dataset_name: str,
+    split: str,
+    q25: int,
+    q50: int,
+    styles: List[Dict[str, Any]],
+    strategies: Dict[str, Any],
+    recettes: Dict[str, Any],
+    llm_cfg: Dict[str, Any],
+    max_tokens: int,
+    sleep_ms: int,
+    seed: Optional[int],
+) -> Dict[str, Any]:
     # RNG par élément pour reproductibilité éventuelle
-    if seed is None:
-        rng = random.Random()
-    else:
-        rng = random.Random(seed + source_index)
+    rng = random.Random(seed + source_index) if seed is not None else random.Random()
 
     length = len(text.strip())
     category = categorize_length(length, q25, q50)
@@ -332,7 +345,9 @@ def make_record(idx_global: int,
         style_key = style_obj.get("key", None)
 
     word_count = pick_word_count_if_any(strat, rng)
-    prompt = format_strategy_prompt(strat, anchor_text=text, style_instruction=style_instruction, word_count=word_count)
+    prompt = format_strategy_prompt(
+        strat, anchor_text=text, style_instruction=style_instruction, word_count=word_count
+    )
 
     model, provider = pick_llm_rotation(llm_cfg, rng)
 
@@ -342,12 +357,15 @@ def make_record(idx_global: int,
         prompt=prompt,
         temperature=0.7,
         max_tokens=max_tokens,
-        sleep_ms=sleep_ms
+        sleep_ms=sleep_ms,
     )
+
+    if generated is None:
+        return {"error": "api_error_or_rate_limit", "anchor_text": text, "source_index": source_index}
 
     uid = make_uid(dataset_name, split, text)
 
-    rec = {
+    rec: Dict[str, Any] = {
         "uid": uid,
         "source_dataset": dataset_name,
         "source_split": split,
@@ -363,8 +381,6 @@ def make_record(idx_global: int,
         "generated_text": generated,
         "timestamp_utc": iso_now(),
     }
-    if generated is None:
-        rec["error"] = "api_error_or_rate_limit"
 
     return rec
 
@@ -386,7 +402,7 @@ def main():
     parser.add_argument("--resume-from-hub", action="store_true")
     parser.add_argument("--private", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--concurrency", type=int, default=100, help="Nombre de threads pour les requêtes")
+    parser.add_argument("--concurrency", type=int, default=80, help="Nombre de threads pour les requêtes")
     parser.add_argument("--no-progress", action="store_true", help="Désactive la barre de progression (utile pour logs CI)")
     args = parser.parse_args()
 
@@ -460,56 +476,61 @@ def main():
     # Exécution parallèle
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    max_tokens = 4000  # demandé
+    max_tokens = 4000  # plafond par défaut
     processed = 0
 
     with ThreadPoolExecutor(max_workers=max(1, args.concurrency)) as ex:
         pbar = None
         show_progress = (tqdm is not None) and (not args.no_progress)
-        futures_total = 0
 
         futures = []
         for (idx_global, src_idx, text) in tasks:
             if args.dry_run:
-                # Construction rapide sans appel API
-                length = len(text.strip())
-                category = categorize_length(length, q25, q50)
-                futures.append(ex.submit(lambda: {
-                    "uid": make_uid(args.dataset, split, text),
-                    "source_dataset": args.dataset,
-                    "source_split": split,
-                    "source_index": src_idx,
-                    "anchor_text": text,
-                    "anchor_length": length,
-                    "category": category,
-                    "strategy_key": "dry_run",
-                    "style_key": None,
-                    "word_count": None,
-                    "model": "dry_run_model",
-                    "provider": None,
-                    "generated_text": f"[DRY-RUN] category={category}",
-                    "timestamp_utc": iso_now(),
-                }))
+                # Fonction locale pour éviter late-binding sur text/src_idx
+                def _dry_record(_text=text, _src_idx=src_idx):
+                    length = len(_text.strip())
+                    category = categorize_length(length, q25, q50)
+                    return {
+                        "uid": make_uid(args.dataset, split, _text),
+                        "source_dataset": args.dataset,
+                        "source_split": split,
+                        "source_index": _src_idx,
+                        "anchor_text": _text,
+                        "anchor_length": length,
+                        "category": category,
+                        "strategy_key": "dry_run",
+                        "style_key": None,
+                        "word_count": None,
+                        "model": "dry_run_model",
+                        "provider": None,
+                        "generated_text": f"[DRY-RUN] category={category}",
+                        "timestamp_utc": iso_now(),
+                    }
+                futures.append(ex.submit(_dry_record))
             else:
-                futures.append(ex.submit(
-                    make_record,
-                    idx_global,
-                    src_idx,
-                    text,
-                    args.dataset,
-                    split,
-                    q25, q50,
-                    styles,
-                    strategies,
-                    recettes,
-                    llm_cfg,
-                    max_tokens,
-                    args.sleep_ms,
-                    args.seed
-                ))
+                futures.append(
+                    ex.submit(
+                        make_record,
+                        idx_global,
+                        src_idx,
+                        text,
+                        args.dataset,
+                        split,
+                        q25,
+                        q50,
+                        styles,
+                        strategies,
+                        recettes,
+                        llm_cfg,
+                        max_tokens,
+                        args.sleep_ms,
+                        args.seed,
+                    )
+                )
 
         if show_progress:
             pbar = tqdm(total=len(futures), desc="Generating", unit="item")
+
         for fut in as_completed(futures):
             rec = fut.result()
             if pbar is not None:

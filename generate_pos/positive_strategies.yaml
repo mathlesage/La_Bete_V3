@@ -94,7 +94,7 @@ strategies:
     
     requires_style: true
 
-  paraphrase_longue:
+  paraphrase_longue_fidele:
     key: "paraphrase_longue"
     prompt: |
       Effectue une paraphrase approfondie du long texte suivant pour produire un nouveau texte, conservant toutes les idées mais avec une formulation entièrement originale, sans mots en commun, une structure et un ordre des idées différents.
@@ -199,7 +199,6 @@ llm:
       provider: "google-vertex"
     - model: "meta-llama/llama-4-maverick"
       provider: "lambda"
-    - model: "qwen/qwen3-235b-a22b-2507"
-      provider: "baseten"
+
 
     
