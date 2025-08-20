@@ -374,7 +374,7 @@ if __name__ == "__main__":
     import os
 
     repo_final = compute_and_push_cossim_on_hub(
-        repo_id_in="matheoqtb/ancre_querry",                  # dataset source sur le Hub
+        repo_id_in="matheoqtb/ancre_querry2",                  # dataset source sur le Hub
         col_a="anchor_text",                                  # ex: "question"
         col_b="generated_text",                               # ex: "reponse"
         out_col="cos_sim_pos",                                # colonne cible
