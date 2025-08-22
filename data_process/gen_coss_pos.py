@@ -379,7 +379,7 @@ if __name__ == "__main__":
         col_b="generated_text",                               # ex: "reponse"
         out_col="cos_sim_pos",                                # colonne cible
         embedding_model="Lajavaness/bilingual-embedding-large",
-        repo_id_out="matheoqtb/ancre_querry_cos",             # None -> push dans le même repo
+        repo_id_out="matheoqtb/ancre_querry_cos_validated",             # None -> push dans le même repo
         private=None,                                         # None -> conserve la visibilité existante
         revision="main",                                      # branche/révision à lire
         config_name=None,                                     # config si le dataset en a une
