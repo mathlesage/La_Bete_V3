@@ -14,7 +14,7 @@ python test_validate_positives.py \
   --in-repo matheoqtb/ancre_querry2 \
   --prompts judge_row_prompts_min.yaml \
   --n 10 \
-  --judge-model "google/gemini-2.5-pro" \
+  --judge-model "google/gemini-2.5-flash-lite" \
   --judge-provider "google-vertex" \
   --concurrency 8
 """
