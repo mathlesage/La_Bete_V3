@@ -73,7 +73,7 @@ def call_llm_json(client: Any,
                   provider: Optional[str],
                   system: str,
                   user: str,
-                  max_tokens: int = 10000,
+                  max_tokens: int = 100000,
                   temperature: float = 0.2,
                   timeout: Optional[float] = 120.0) -> Tuple[Optional[dict], str]:
     """
@@ -384,7 +384,7 @@ def improve_prompt(client: Any,
         provider=provider,
         system=PROMPT_IMPROVER_SYSTEM,
         user=build_improver_user(prev_title, prev_prompt, judge_summary, examples, strategy_key),
-        max_tokens=10000,
+        max_tokens=50000,
         temperature=0.3,
         timeout=120.0
     )
@@ -463,7 +463,7 @@ def main():
             styles=styles,
             strategy_key=args.strategy,
             strategies_cfg={args.strategy: virt_strategy},
-            max_tokens_per_item=400,
+            max_tokens_per_item=2000,
             seed=rnd.randrange(10**9)
         )
         # 3) Judge
@@ -485,7 +485,7 @@ def main():
             judge_yaml=judge_yaml,
             batch_pairs=pairs,
             meta=meta,
-            max_tokens=10000
+            max_tokens=100000
         )
 
         log_rec = {

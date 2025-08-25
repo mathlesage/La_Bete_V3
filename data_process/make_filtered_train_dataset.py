@@ -161,6 +161,6 @@ if __name__ == "__main__":
         repo_id_in="matheoqtb/ancre_querry_cos",
         cos_col="cos_sim_pos",
         threshold=0.60,
-        repo_id_out="matheoqtb/ancre_querry_filtre",
+        repo_id_out="matheoqtb/ancre_querry_filtre_validation2",
         revision="main"
     )

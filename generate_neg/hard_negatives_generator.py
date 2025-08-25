@@ -18,9 +18,6 @@ MODELS = {
     ],
     "lambda": [
         "meta-llama/llama-4-maverick",
-    ],
-    "baseten": [
-        "qwen/qwen3-235b-a22b-2507",
     ]
 }
 def load_prompts():

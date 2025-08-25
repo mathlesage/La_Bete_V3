@@ -451,12 +451,12 @@ def heartbeat(total_tasks_func, processed_func, buffer_len_func, pushes_func, in
 
 def main():
     ap = argparse.ArgumentParser(description="Génère 2 hard negatives par item et pousse sur le Hub")
-    ap.add_argument("--in-repo", default="matheoqtb/ancre_querry_cos_filtered_train")
+    ap.add_argument("--in-repo", default="matheoqtb/ancre_querry_cos")
     ap.add_argument("--in-split", default=None)
-    ap.add_argument("--out-repo", default="matheoqtb/ancre_querry_cos_filtered_train")
+    ap.add_argument("--out-repo", default="matheoqtb/ancre_querry_neg_cos")
     ap.add_argument("--yaml", required=True)
     ap.add_argument("--encoder", default="Lajavaness/bilingual-embedding-large")
-    ap.add_argument("--sim-max", type=float, default=0.6, help="Seuil max de similarité (strictement <)")
+    ap.add_argument("--sim-max", type=float, default=0.9, help="Seuil max de similarité (strictement <)")
     ap.add_argument("--sim-min", type=float, default=0.0, help="Seuil min (>=) si voulu, 0 pour désactiver")
     ap.add_argument("--max-tries", type=int, default=4, help="Nb d'essais pour trouver un négatif sous le seuil")
     ap.add_argument("--chunk-size", type=int, default=5000)
