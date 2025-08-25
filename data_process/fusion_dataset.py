@@ -6,11 +6,11 @@ import pandas as pd
 # ---------- à personnaliser ----------
 login()  # colle ton token
 
-repo_left  = "matheoqtb/ancre_querry_neg_cos_all"     # dataset principal
-repo_right = "matheoqtb/ancre_querry_cos_all"     # dataset à joindre
-new_repo   = "matheoqtb/dataset_merged"
+repo_left  = "matheoqtb/ancre_querry_neg_cos_test"     # dataset principal
+repo_right = "matheoqtb/ancre_querry_filtre"     # dataset à joindre
+new_repo   = "matheoqtb/dataset_merged2"
 split      = "train"                     # None pour traiter tous les splits communs
-how        = "outer"                     # 'inner' 'left' 'right' 'outer'
+how        = "left"                     # 'inner' 'left' 'right' 'outer'
 left_key   = None                        # ex "id" si tu connais la clé côté gauche
 right_key  = None                        # ex "uid" si le nom diffère côté droit
 keep_right_key = False                   # garde ou non la clé droite si elle a un nom différent

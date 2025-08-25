@@ -45,9 +45,12 @@ def main():
     ap.add_argument("--only_subfolders", nargs="*", default=None, help="Sous-dossiers à exporter (sinon auto-detection)")
     ap.add_argument("--private", action="store_true", help="Créer les repos en privé")
     ap.add_argument("--overwrite", action="store_true", help="Ecraser le contenu si le repo existe déjà")
+    ap.add_argument("--token", default=None, help="Token HF (sinon pris de HF_TOKEN dans l'environnement)")
     args = ap.parse_args()
-
-    token = os.environ.get("HF_TOKEN")
+    if args.token:
+        token = args.token
+    else:
+        token = os.environ.get("HF_TOKEN")
     if not token:
         raise SystemExit("❌ HF_TOKEN non défini dans l'environnement.")
 

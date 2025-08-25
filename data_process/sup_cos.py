@@ -5,8 +5,8 @@ import numpy as np
 
 # --------- à personnaliser ----------
 
-repo_in   = "matheoqtb/dataset_merged"   # dataset source
-new_repo  = "matheoqtb/dataset_pos_sup2" # dataset filtré sur le Hub
+repo_in   = "matheoqtb/dataset_merged2"   # dataset source
+new_repo  = "matheoqtb/dataset_pos_sup3" # dataset filtré sur le Hub
 split     = "train"                        # None pour traiter tous les splits communs
 
 col_A = "cos_sim_pos"        # colonne à comparer
@@ -14,7 +14,7 @@ col_B = "cos_pos__neg_from_positive"        # 1re colonne de référence
 col_C = "cos_pos__neg_from_anchor"        # 2e colonne de référence
 col_D = "cos_sim_pos"        # colonne soumise au seuil
 
-threshold_D = 0.7
+threshold_D = 0.6
 compare_to_sum = False   # False -> A > B et A > C ; True -> A > (B + C)
 num_proc = 4             # parallélisme pour accélérer
 # ------------------------------------
@@ -43,7 +43,7 @@ def _filter_one_split(ds, col_A, col_B, col_C, col_D, threshold_D, compare_to_su
         if compare_to_sum:
             condA = A > (B + C)
         else:
-            condA = (A > B + 0.1) & (A > C + 0.1)
+            condA = (0.7 > B + 0.1) & (0.7 > C + 0.1)
 
         condD = D > threshold_D
 
